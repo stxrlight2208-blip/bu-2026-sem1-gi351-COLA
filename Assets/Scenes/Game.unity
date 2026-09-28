@@ -1117,10 +1117,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCharacter
   characters:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 1284526216}
+  - {fileID: 1362364517}
+  - {fileID: 543118902}
+  - {fileID: 1718129728}
 --- !u!114 &709187498
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class PlayerAimAndWeapon : MonoBehaviour
 {
@@ -24,6 +25,7 @@ public class PlayerAimAndWeapon : MonoBehaviour
     [Header("Limited Ammo Settings")]
     public int maxAmmo = 30;
     public TextMeshProUGUI ammoText;
+    public Slider ammoBar;
 
     [HideInInspector]
     public int currentAmmo;
@@ -139,7 +141,13 @@ public class PlayerAimAndWeapon : MonoBehaviour
     {
         if (ammoText != null)
         {
-            ammoText.text = $"AMMO: {currentAmmo} [{currentAmmoType}]";
+            ammoText.text = currentAmmo + "/" + maxAmmo;
+        }
+
+        if (ammoBar != null)
+        {
+            ammoBar.maxValue = maxAmmo;
+            ammoBar.value = currentAmmo;
         }
     }
 

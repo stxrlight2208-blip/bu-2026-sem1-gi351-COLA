@@ -989,9 +989,11 @@ MonoBehaviour:
   firePoint: {fileID: 601405}
   bulletPrefab: {fileID: 7799975132187725347, guid: 43f9f872cb0b0264f9b7c0d2b8a52b27,
     type: 3}
+  silverBulletPrefab: {fileID: 0}
   fireRate: 0.15
   bulletForce: 20
   damage: 10
+  currentAmmoType: 0
   maxAmmo: 30
   ammoText: {fileID: 2017110604}
   ammoBar: {fileID: 237943089}

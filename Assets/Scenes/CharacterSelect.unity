@@ -851,7 +851,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1240811341}
-        m_TargetAssemblyTypeName: CharacterSceneLoader, Assembly-CSharp
+        m_TargetAssemblyTypeName: SceneLoader, Assembly-CSharp
         m_MethodName: StartGame
         m_Mode: 1
         m_Arguments:

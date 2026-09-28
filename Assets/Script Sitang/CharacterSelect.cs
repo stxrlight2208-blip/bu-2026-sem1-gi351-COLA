@@ -21,5 +21,8 @@ public class CharacterSelect : MonoBehaviour
 
         characters[index].enabled = true;
         characters[index].Play("Character_Run");
+
+        PlayerPrefs.SetInt("SelectedCharacter", index);
+        PlayerPrefs.Save();
     }
 }

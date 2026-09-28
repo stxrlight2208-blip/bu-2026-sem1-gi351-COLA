@@ -8,7 +8,7 @@ public class GameMusic : MonoBehaviour
     {
         if (MusicManager.Instance != null)
         {
-            MusicManager.Instance.PlayGameMusic(gameMusic);
+            MusicManager.Instance.PlayMusic(gameMusic);
         }
     }
 }

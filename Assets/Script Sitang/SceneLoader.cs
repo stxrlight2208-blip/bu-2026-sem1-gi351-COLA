@@ -8,6 +8,11 @@ public class SceneLoader : MonoBehaviour
         SceneManager.LoadScene("CharacterSelect");
     }
 
+    public void LoadSettings()
+    {
+        SceneManager.LoadScene("Settings");
+    }
+
     public void StartGame()
     {
         SceneManager.LoadScene("Game");

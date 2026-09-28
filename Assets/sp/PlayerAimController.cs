@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro; // ใช้สำหรับแสดงจำนวนกระสุนบน UI (TextMeshPro)
+using UnityEngine.UI;
 
 public class PlayerAimAndWeapon : MonoBehaviour
 {
@@ -19,8 +20,9 @@ public class PlayerAimAndWeapon : MonoBehaviour
 
     [Header("Limited Ammo Settings")]
     public int maxAmmo = 30;         // จำนวนกระสุนทั้งหมดที่มี
-    public TextMeshProUGUI ammoText; // (Optional) ลาก UI Text มาใส่เพื่อแสดงกระสุนบนหน้าจอ
-    
+    public TextMeshProUGUI ammoText;// (Optional) ลาก UI Text มาใส่เพื่อแสดงกระสุนบนหน้าจอ
+    public Slider ammoBar;
+
     [HideInInspector]
     public int currentAmmo;         // จำนวนกระสุนปัจจุบันที่เหลืออยู่
 
@@ -126,10 +128,15 @@ public class PlayerAimAndWeapon : MonoBehaviour
 
     void UpdateAmmoUI()
     {
-        // อัปเดตตัวเลขกระสุนบนหน้าจอ (ถ้ามีการเชื่อมต่อ Text)
         if (ammoText != null)
         {
-            ammoText.text = "AMMO: " + currentAmmo;
+            ammoText.text = currentAmmo + "/" + maxAmmo;
+        }
+
+        if (ammoBar != null)
+        {
+            ammoBar.maxValue = maxAmmo;
+            ammoBar.value = currentAmmo;
         }
     }
 

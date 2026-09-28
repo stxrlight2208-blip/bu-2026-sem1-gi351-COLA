@@ -18,10 +18,19 @@ public class MusicManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         audioSource = GetComponent<AudioSource>();
+        audioSource.volume = PlayerPrefs.GetFloat("MusicVolume", 1f);
     }
 
     public void SetVolume(float volume)
     {
         audioSource.volume = volume;
+    }
+
+    public void PlayGameMusic(AudioClip gameMusic)
+    {
+        if (gameMusic == null) return;
+
+        audioSource.clip = gameMusic;
+        audioSource.Play();
     }
 }

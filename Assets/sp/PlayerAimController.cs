@@ -83,7 +83,7 @@ public class PlayerAimAndWeapon : MonoBehaviour
         if (aimDir.x < 0)
         {
             bodySprite.flipX = true; // หันลำตัวไปทางซ้าย
-            handPivot.localScale = new Vector3(1f, -1f, 1f); // พลิกปืนไม่ให้กลับหัว
+            handPivot.localScale = new Vector3(-1f, -1f, 1f); // พลิกปืนไม่ให้กลับหัว
         }
         else
         {

@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class ZombieController : MonoBehaviour
+public class ZombieController : MonoBehaviour, IDamageable
 {
     [Header("Health Settings")]
     public int maxHealth = 20;
@@ -20,7 +20,7 @@ public class ZombieController : MonoBehaviour
     [Header("Components")]
     public SpriteRenderer spriteRenderer;
     public Collider2D zombieCollider;
-    public Animator anim;        // ลาก Animator ของซอมบี้มาใส่เพื่อสั่งหยุดวิ่งชั่วคราวตอนโดนยิง
+    public Animator anim;        // ลาก Animator ของซอมบี้มาใส่ (ถ้ามี)
 
     private bool isDead = false;
     private Coroutine flashCoroutine;
@@ -64,6 +64,13 @@ public class ZombieController : MonoBehaviour
         }
     }
 
+    // ฟังก์ชันรองรับระบบกระสุนจาก Bullet.cs (IDamageable)
+    public void TakeDamage(int damage, AmmoType ammoType)
+    {
+        TakeDamage(damage);
+    }
+
+    // ฟังก์ชันรับดาเมจหลักและสั่งกระพริบ
     public void TakeDamage(int damage)
     {
         if (isDead) return;
@@ -103,7 +110,6 @@ public class ZombieController : MonoBehaviour
         isDead = true;
         Debug.Log("ซอมบี้ตายแล้ว!");
 
-        // บวกคะแนน 100 คะแนนเมื่อฆ่าซอมบี้ได้
         if (ScoreManager.instance != null)
         {
             ScoreManager.instance.AddScore(100);

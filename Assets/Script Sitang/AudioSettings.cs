@@ -33,4 +33,5 @@ public class AudioSettings : MonoBehaviour
         PlayerPrefs.SetFloat("MusicVolume", musicSlider.value);
         PlayerPrefs.Save();
     }
+   
 }

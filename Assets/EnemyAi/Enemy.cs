@@ -9,6 +9,11 @@ public class Enemy : MonoBehaviour, IDamageable
     public float maxHealth = 100f;
     public float moveSpeed = 2.5f;
 
+    [Header("Attack Setup")]
+    public int attackDamage = 10;
+    public float attackRate = 1f; // โจมตีทุก 1 วินาที
+    private float nextAttackTime = 0f;
+
     private float currentHealth;
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
@@ -26,7 +31,6 @@ public class Enemy : MonoBehaviour, IDamageable
     {
         currentHealth = maxHealth;
 
-        // อิงโค้ดเพื่อน: ค้นหา Player ด้วย Tag "Player"
         GameObject playerObj = GameObject.FindWithTag("Player");
         if (playerObj != null)
         {
@@ -36,13 +40,11 @@ public class Enemy : MonoBehaviour, IDamageable
 
     private void FixedUpdate()
     {
-        // ถ้าศัตรูยังไม่ตาย และเจอ Player ให้วิ่งเข้าหา
         if (playerTransform != null && currentHealth > 0)
         {
             Vector2 direction = (playerTransform.position - transform.position).normalized;
             rb.MovePosition(rb.position + direction * moveSpeed * Time.fixedDeltaTime);
 
-            // กลับหน้า Sprite ตามทิศทางเดิน
             if (direction.x != 0)
             {
                 spriteRenderer.flipX = direction.x < 0;
@@ -50,11 +52,31 @@ public class Enemy : MonoBehaviour, IDamageable
         }
     }
 
+    // เมื่อเดินชน Player ให้เรียกฟังก์ชัน TakeDamage ของ PlayerHealth.cs
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (currentHealth <= 0) return;
+
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            if (Time.time >= nextAttackTime)
+            {
+                PlayerHealth playerHealth = collision.gameObject.GetComponent<PlayerHealth>();
+                if (playerHealth != null)
+                {
+                    playerHealth.TakeDamage(attackDamage);
+                    nextAttackTime = Time.time + attackRate;
+                }
+            }
+        }
+    }
+
+    // รับความเสียหายจากกระสุน
     public void TakeDamage(int damage, AmmoType ammoType)
     {
         if (currentHealth <= 0) return;
 
-        // แวมไพร์กระสุนเงิน เป็นอมตะต่อกระสุนธรรมดา
+        // SilverOnly อมตะต่อกระสุนธรรมดา
         if (enemyType == EnemyType.SilverOnly && ammoType != AmmoType.MagicSilver)
         {
             Debug.Log("Silver Vampire เป็นอมตะต่อกระสุนธรรมดา!");
@@ -62,13 +84,9 @@ public class Enemy : MonoBehaviour, IDamageable
         }
 
         currentHealth -= damage;
-        Debug.Log($"{enemyType} HP: {currentHealth}/{maxHealth}");
+        Debug.Log($"{enemyType} HP เหลือ: {currentHealth}/{maxHealth}");
 
-        // สั่งเล่น Animation Hit ของ Asset
-        if (anim != null)
-        {
-            anim.SetTrigger("Hit");
-        }
+        if (anim != null) anim.SetTrigger("Hit");
 
         if (currentHealth <= 0)
         {
@@ -78,16 +96,11 @@ public class Enemy : MonoBehaviour, IDamageable
 
     private void Die()
     {
-        // ปิด Collider ไม่ให้ชนกับ Player หรือกระสุนเพิ่ม
         Collider2D col = GetComponent<Collider2D>();
         if (col != null) col.enabled = false;
 
-        // สั่งเล่น Animation Dead ของ Asset
-        if (anim != null)
-        {
-            anim.SetBool("Dead", true);
-        }
+        if (anim != null) anim.SetBool("Dead", true);
 
-        Destroy(gameObject, 0.5f); // ลบออกจากฉากหลังตาย 0.5 วินาที
+        Destroy(gameObject, 0.4f);
     }
 }

@@ -1,5 +1,5 @@
 using UnityEngine;
-using TMPro; // ใช้สำหรับแสดงจำนวนกระสุนบน UI (TextMeshPro)
+using TMPro;
 
 public class PlayerAimAndWeapon : MonoBehaviour
 {
@@ -7,22 +7,26 @@ public class PlayerAimAndWeapon : MonoBehaviour
     public float moveSpeed = 5f;
 
     [Header("Aiming Setup")]
-    public Transform handPivot;       // ลาก HandLeft_WeaponPivot มาใส่ที่นี่
-    public SpriteRenderer bodySprite; // ลาก Body (SpriteRenderer) มาใส่ที่นี่
+    public Transform handPivot;
+    public SpriteRenderer bodySprite;
 
     [Header("Weapon Settings")]
-    public Transform firePoint;     // ตำแหน่งปลายปืน
-    public GameObject bulletPrefab; // Prefab ของกระสุน
-    public float fireRate = 0.15f;   // ความเร็วในการยิง (วินาที/นัด)
-    public float bulletForce = 20f;  // ความเร็วพุ่งของกระสุน
-    public int damage = 10;          // ความเสียหาย
+    public Transform firePoint;
+    public GameObject bulletPrefab;       // Prefab กระสุนธรรมดา
+    public GameObject silverBulletPrefab; // Prefab กระสุนเงิน (เพิ่มบรรทัดนี้)
+    public float fireRate = 0.15f;
+    public float bulletForce = 20f;
+    public int damage = 10;
+
+    [Header("Ammo Type Settings")]
+    public AmmoType currentAmmoType = AmmoType.Normal;
 
     [Header("Limited Ammo Settings")]
-    public int maxAmmo = 30;         // จำนวนกระสุนทั้งหมดที่มี
-    public TextMeshProUGUI ammoText; // (Optional) ลาก UI Text มาใส่เพื่อแสดงกระสุนบนหน้าจอ
-    
+    public int maxAmmo = 30;
+    public TextMeshProUGUI ammoText;
+
     [HideInInspector]
-    public int currentAmmo;         // จำนวนกระสุนปัจจุบันที่เหลืออยู่
+    public int currentAmmo;
 
     private Rigidbody2D rb;
     private Camera mainCam;
@@ -37,10 +41,9 @@ public class PlayerAimAndWeapon : MonoBehaviour
 
         if (rb != null)
         {
-            rb.freezeRotation = true; // ป้องกันตัวละครหมุนติ้วด้วยระบบ Physics
+            rb.freezeRotation = true;
         }
 
-        // กำหนดกระสุนเริ่มต้นเท่ากับกระสุนสูงสุด
         currentAmmo = maxAmmo;
         UpdateAmmoUI();
 
@@ -49,23 +52,25 @@ public class PlayerAimAndWeapon : MonoBehaviour
 
     void Update()
     {
-        // 1. รับค่าการเดิน (WASD / Arrow Keys)
         moveInput.x = Input.GetAxisRaw("Horizontal");
         moveInput.y = Input.GetAxisRaw("Vertical");
 
-        // 2. รับตำแหน่งเมาส์
         mousePos = mainCam.ScreenToWorldPoint(Input.mousePosition);
 
-        // 3. ปุ่มยิงปืน (คลิกซ้ายค้าง)
+        // กด Q เพื่อสลับกระสุนระหว่าง Normal และ MagicSilver
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            currentAmmoType = (currentAmmoType == AmmoType.Normal) ? AmmoType.MagicSilver : AmmoType.Normal;
+            Debug.Log("สลับกระสุนเป็น: " + currentAmmoType);
+            UpdateAmmoUI();
+        }
+
         HandleShooting();
     }
 
     void FixedUpdate()
     {
-        // คำนวณการเดิน
         rb.linearVelocity = moveInput.normalized * moveSpeed;
-
-        // คำนวณการหมุนมือเล็งตามเมาส์
         HandleAiming();
     }
 
@@ -80,19 +85,18 @@ public class PlayerAimAndWeapon : MonoBehaviour
 
         if (aimDir.x < 0)
         {
-            bodySprite.flipX = true; // หันลำตัวไปทางซ้าย
-            handPivot.localScale = new Vector3(1f, -1f, 1f); // พลิกปืนไม่ให้กลับหัว
+            bodySprite.flipX = true;
+            handPivot.localScale = new Vector3(1f, -1f, 1f);
         }
         else
         {
-            bodySprite.flipX = false; // หันลำตัวไปทางขวา
+            bodySprite.flipX = false;
             handPivot.localScale = new Vector3(1f, 1f, 1f);
         }
     }
 
     void HandleShooting()
     {
-        // ยิงได้เฉพาะเมื่อกระสุนยังเหลือมากกว่า 0 (ถ้าหมดแล้วจะไม่ทำงาน)
         if (Input.GetButton("Fire1") && Time.time >= nextFireTime && currentAmmo > 0)
         {
             nextFireTime = Time.time + fireRate;
@@ -102,14 +106,20 @@ public class PlayerAimAndWeapon : MonoBehaviour
 
     void Shoot()
     {
-        if (bulletPrefab == null || firePoint == null) return;
+        if (firePoint == null) return;
 
-        // ลดจำนวนกระสุนลงทีละ 1 นัด
+        // เลือก Prefab ตามประเภทกระสุนปัจจุบัน (ถ้าเป็น MagicSilver ให้ใช้ silverBulletPrefab)
+        GameObject prefabToSpawn = (currentAmmoType == AmmoType.MagicSilver && silverBulletPrefab != null)
+            ? silverBulletPrefab
+            : bulletPrefab;
+
+        if (prefabToSpawn == null) return;
+
         currentAmmo--;
         UpdateAmmoUI();
 
-        // สร้างกระสุน
-        GameObject bulletObj = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+        // สร้างกระสุนตาม Prefab ที่เลือกไว้
+        GameObject bulletObj = Instantiate(prefabToSpawn, firePoint.position, firePoint.rotation);
 
         Rigidbody2D bulletRb = bulletObj.GetComponent<Rigidbody2D>();
         if (bulletRb != null)
@@ -121,15 +131,15 @@ public class PlayerAimAndWeapon : MonoBehaviour
         if (bulletScript != null)
         {
             bulletScript.damage = damage;
+            bulletScript.ammoType = currentAmmoType; // ส่งประเภทกระสุนที่เลือกอยู่
         }
     }
 
     void UpdateAmmoUI()
     {
-        // อัปเดตตัวเลขกระสุนบนหน้าจอ (ถ้ามีการเชื่อมต่อ Text)
         if (ammoText != null)
         {
-            ammoText.text = "AMMO: " + currentAmmo;
+            ammoText.text = $"AMMO: {currentAmmo} [{currentAmmoType}]";
         }
     }
 
@@ -147,11 +157,11 @@ public class PlayerAimAndWeapon : MonoBehaviour
             }
         }
     }
-    // เพิ่มฟังก์ชันนี้ลงใน PlayerAimAndWeapon.cs
+
     public void AddAmmo(int amount)
     {
         currentAmmo += amount;
-        UpdateAmmoUI(); // อัปเดต UI กระสุนถ้ามี
+        UpdateAmmoUI();
         Debug.Log("เก็บกระสุนเพิ่มได้: " + amount + " นัด | กระสุนปัจจุบัน: " + currentAmmo);
     }
 }

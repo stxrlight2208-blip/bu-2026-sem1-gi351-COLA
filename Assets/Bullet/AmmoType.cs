@@ -1,5 +1,5 @@
 public enum AmmoType
 {
-    Normal,
-    MagicSilver
+    Normal,     // กระสุนธรรมดา
+    MagicSilver // กระสุนเงินวิเศษ
 }

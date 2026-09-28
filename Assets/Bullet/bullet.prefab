@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6737016902361756599}
   - component: {fileID: 4628519243547549903}
   - component: {fileID: 858246123034320396}
-  - component: {fileID: 7085431444247768870}
+  - component: {fileID: -7492694322167002240}
   m_Layer: 0
   m_Name: bullet
   m_TagString: Untagged
@@ -110,6 +110,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Bullet
   destroyTime: 2
   damage: 10
+  ammoType: 0
 --- !u!50 &858246123034320396
 Rigidbody2D:
   serializedVersion: 5
@@ -137,8 +138,8 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!61 &7085431444247768870
-BoxCollider2D:
+--- !u!70 &-7492694322167002240
+CapsuleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -172,14 +173,5 @@ BoxCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
+  m_Direction: 0

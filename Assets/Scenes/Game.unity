@@ -993,8 +993,8 @@ MonoBehaviour:
   bulletForce: 20
   damage: 10
   maxAmmo: 30
-  ammoText: {fileID: 0}
-  ammoBar: {fileID: 0}
+  ammoText: {fileID: 2017110604}
+  ammoBar: {fileID: 237943089}
   currentAmmo: 0
 --- !u!212 &709187494
 SpriteRenderer:

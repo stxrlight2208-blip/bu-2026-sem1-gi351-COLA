@@ -1,6 +1,5 @@
 using UnityEngine;
 using TMPro;
-using UnityEngine.UI;
 
 public class PlayerAimAndWeapon : MonoBehaviour
 {
@@ -14,7 +13,7 @@ public class PlayerAimAndWeapon : MonoBehaviour
     [Header("Weapon Settings")]
     public Transform firePoint;
     public GameObject bulletPrefab;       // Prefab กระสุนธรรมดา
-    public GameObject silverBulletPrefab; // Prefab กระสุนเงิน (เพิ่มบรรทัดนี้)
+    public GameObject silverBulletPrefab; // Prefab กระสุนเงิน
     public float fireRate = 0.15f;
     public float bulletForce = 20f;
     public int damage = 10;
@@ -23,12 +22,11 @@ public class PlayerAimAndWeapon : MonoBehaviour
     public AmmoType currentAmmoType = AmmoType.Normal;
 
     [Header("Limited Ammo Settings")]
-    public int maxAmmo = 30;
+    public int normalAmmo = 30;       // จำนวนกระสุนธรรมดา
+    public int magicSilverAmmo = 0;   // จำนวนกระสุนเงินวิเศษ
     public TextMeshProUGUI ammoText;
-    public Slider ammoBar;
-
-    [HideInInspector]
-    public int currentAmmo;
+    [Header("Ammo UI")]
+    public AmmoUI ammoUI;
 
     private Rigidbody2D rb;
     private Camera mainCam;
@@ -46,9 +44,7 @@ public class PlayerAimAndWeapon : MonoBehaviour
             rb.freezeRotation = true;
         }
 
-        currentAmmo = maxAmmo;
         UpdateAmmoUI();
-
         SetHandSortingOrder();
     }
 
@@ -59,11 +55,10 @@ public class PlayerAimAndWeapon : MonoBehaviour
 
         mousePos = mainCam.ScreenToWorldPoint(Input.mousePosition);
 
-        // กด Q เพื่อสลับกระสุนระหว่าง Normal และ MagicSilver
+        // กด Q เพื่อสลับประเภทกระสุน
         if (Input.GetKeyDown(KeyCode.Q))
         {
             currentAmmoType = (currentAmmoType == AmmoType.Normal) ? AmmoType.MagicSilver : AmmoType.Normal;
-            Debug.Log("สลับกระสุนเป็น: " + currentAmmoType);
             UpdateAmmoUI();
         }
 
@@ -99,7 +94,11 @@ public class PlayerAimAndWeapon : MonoBehaviour
 
     void HandleShooting()
     {
-        if (Input.GetButton("Fire1") && Time.time >= nextFireTime && currentAmmo > 0)
+        // เช็กจำนวนกระสุนตามประเภทที่เลือกอยู่
+        bool hasAmmo = (currentAmmoType == AmmoType.Normal && normalAmmo > 0) ||
+                       (currentAmmoType == AmmoType.MagicSilver && magicSilverAmmo > 0);
+
+        if (Input.GetButton("Fire1") && Time.time >= nextFireTime && hasAmmo)
         {
             nextFireTime = Time.time + fireRate;
             Shoot();
@@ -110,17 +109,30 @@ public class PlayerAimAndWeapon : MonoBehaviour
     {
         if (firePoint == null) return;
 
-        // เลือก Prefab ตามประเภทกระสุนปัจจุบัน (ถ้าเป็น MagicSilver ให้ใช้ silverBulletPrefab)
         GameObject prefabToSpawn = (currentAmmoType == AmmoType.MagicSilver && silverBulletPrefab != null)
             ? silverBulletPrefab
             : bulletPrefab;
 
         if (prefabToSpawn == null) return;
 
-        currentAmmo--;
+        // หักกระสุนตามประเภทที่ใช้อยู่
+        if (currentAmmoType == AmmoType.Normal)
+        {
+            normalAmmo--;
+        }
+        else if (currentAmmoType == AmmoType.MagicSilver)
+        {
+            magicSilverAmmo--;
+
+            // ถ้ากระสุนเงินหมด ให้สลับกลับเป็นกระสุนธรรมดาให้อัตโนมัติ
+            if (magicSilverAmmo <= 0)
+            {
+                currentAmmoType = AmmoType.Normal;
+            }
+        }
+
         UpdateAmmoUI();
 
-        // สร้างกระสุนตาม Prefab ที่เลือกไว้
         GameObject bulletObj = Instantiate(prefabToSpawn, firePoint.position, firePoint.rotation);
 
         Rigidbody2D bulletRb = bulletObj.GetComponent<Rigidbody2D>();
@@ -133,7 +145,7 @@ public class PlayerAimAndWeapon : MonoBehaviour
         if (bulletScript != null)
         {
             bulletScript.damage = damage;
-            bulletScript.ammoType = currentAmmoType; // ส่งประเภทกระสุนที่เลือกอยู่
+            bulletScript.ammoType = currentAmmoType;
         }
     }
 
@@ -141,13 +153,12 @@ public class PlayerAimAndWeapon : MonoBehaviour
     {
         if (ammoText != null)
         {
-            ammoText.text = currentAmmo + "/" + maxAmmo;
+            ammoText.text = $"Normal: {normalAmmo} | Silver: {magicSilverAmmo} [{currentAmmoType}]";
         }
 
-        if (ammoBar != null)
+        if (ammoUI != null)
         {
-            ammoBar.maxValue = maxAmmo;
-            ammoBar.value = currentAmmo;
+            ammoUI.UpdateAmmo(normalAmmo, magicSilverAmmo);
         }
     }
 
@@ -166,10 +177,19 @@ public class PlayerAimAndWeapon : MonoBehaviour
         }
     }
 
-    public void AddAmmo(int amount)
+    // ฟังก์ชันรับกระสุนแยกตามประเภท
+    public void AddAmmo(AmmoType type, int amount)
     {
-        currentAmmo += amount;
+        if (type == AmmoType.Normal)
+        {
+            normalAmmo += amount;
+        }
+        else if (type == AmmoType.MagicSilver)
+        {
+            magicSilverAmmo += amount;
+            currentAmmoType = AmmoType.MagicSilver; // สลับมาใช้กระสุนเงินทันทีเมื่อเก็บได้
+        }
+
         UpdateAmmoUI();
-        Debug.Log("เก็บกระสุนเพิ่มได้: " + amount + " นัด | กระสุนปัจจุบัน: " + currentAmmo);
     }
 }

@@ -10,7 +10,25 @@ public class PlayerCharacter : MonoBehaviour
 
         for (int i = 0; i < characters.Length; i++)
         {
-            characters[i].SetActive(i == selectedCharacter);
+            if (characters[i] != null)
+            {
+                bool isActive = (i == selectedCharacter);
+                characters[i].SetActive(isActive);
+
+                // ถ้าเป็นตัวละครที่เปิดใช้งาน ให้ดึง SpriteRenderer ส่งไปให้ PlayerAimAndWeapon อัตโนมัติ
+                if (isActive)
+                {
+                    PlayerAimAndWeapon weaponScript = GetComponent<PlayerAimAndWeapon>();
+                    if (weaponScript != null)
+                    {
+                        SpriteRenderer sr = characters[i].GetComponent<SpriteRenderer>();
+                        if (sr != null)
+                        {
+                            weaponScript.bodySprite = sr;
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -101,6 +101,9 @@ public class Enemy : MonoBehaviour, IDamageable
 
         if (anim != null) anim.SetBool("Dead", true);
 
-        Destroy(gameObject, 0.4f);
+        // ปิดสคริปต์ศัตรูตัวนี้ เพื่อให้ WaveSpawner รู้ว่าตัวนี้ตายแล้ว ไม่นับรวมในฉากอีก
+        this.enabled = false;
+
+        Destroy(gameObject, 2f); // (ปรับเวลาให้อนิเมชันเล่นจบตามต้องการ)
     }
 }

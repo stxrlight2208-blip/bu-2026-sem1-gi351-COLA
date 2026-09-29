@@ -109,8 +109,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bullet
   destroyTime: 2
-  damage: 20
-  ammoType: 1
+  damage: 10
+  ammoType: 0
 --- !u!50 &858246123034320396
 Rigidbody2D:
   serializedVersion: 5

@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class InfiniteMapGenerator : MonoBehaviour
+public class SpecialMap : MonoBehaviour
 {
     public Transform player;
 
@@ -23,9 +23,7 @@ public class InfiniteMapGenerator : MonoBehaviour
     [Range(0f, 100f)]
     public float enemySpawnChance = 60f; // โอกาสเกิดศัตรูใน Chunk (%)
     public int maxEnemiesPerChunk = 3;   // จำนวนศัตรูสูงสุดต่อ Chunk
-    public int maxEnemiesPerWave = 10;   // จำนวนศัตรูสูงสุดที่จะให้เสกใน Wave นี้ (ตั้งค่าเพิ่มได้จาก Inspector)
 
-    private int currentWaveSpawnedEnemies = 0; // ตัวนับศัตรูที่ถูกเสกไปแล้วใน Wave ปัจจุบัน
     private Dictionary<Vector2Int, GameObject> chunks = new Dictionary<Vector2Int, GameObject>();
 
     void Start()
@@ -39,13 +37,6 @@ public class InfiniteMapGenerator : MonoBehaviour
     void Update()
     {
         UpdateMap();
-    }
-
-    // ฟังก์ชันสำหรับเรียกใช้เมื่อขึ้น Wave ใหม่ (สั่งรีเซ็ตจำนวนการเสก)
-    public void ResetWaveEnemyCount(int newMaxEnemies)
-    {
-        currentWaveSpawnedEnemies = 0;
-        maxEnemiesPerWave = newMaxEnemies;
     }
 
     void UpdateMap()
@@ -110,18 +101,18 @@ public class InfiniteMapGenerator : MonoBehaviour
         chunk.name = "Chunk_" + position.x + "_" + position.y;
 
         // สุ่มเสกกล่องกระสุนบน Chunk นี้
-        TrySpawnAmmoInChunk(worldPosition);
+        TrySpawnAmmoInChunk(chunk, worldPosition);
 
-        // สุ่มเสกศัตรูบน Chunk นี้ (เช็กว่ายังไม่เกินโควต้า Max ของ Wave)
-        if (position != Vector2Int.zero && currentWaveSpawnedEnemies < maxEnemiesPerWave)
+        // สุ่มเสกศัตรูบน Chunk นี้ (เว้นการเสกตรง Chunk แรกที่ผู้เล่นยืนตอนเริ่มเกม)
+        if (position != Vector2Int.zero)
         {
-            TrySpawnEnemiesInChunk(worldPosition);
+            TrySpawnEnemiesInChunk(chunk, worldPosition);
         }
 
         chunks.Add(position, chunk);
     }
 
-    void TrySpawnAmmoInChunk(Vector3 chunkWorldPos)
+    void TrySpawnAmmoInChunk(GameObject parentChunk, Vector3 chunkWorldPos)
     {
         if (ammoPrefabs == null || ammoPrefabs.Length == 0) return;
 
@@ -131,9 +122,9 @@ public class InfiniteMapGenerator : MonoBehaviour
 
             for (int i = 0; i < ammoCount; i++)
             {
-                float halfSize = chunkSize / 2f - 2f;
-                float randomX = Random.Range(-halfSize, halfSize);
-                float randomY = Random.Range(-halfSize, halfSize);
+                float offsetLimit = (chunkSize / 2f) - 2f;
+                float randomX = Random.Range(-offsetLimit, offsetLimit);
+                float randomY = Random.Range(-offsetLimit, offsetLimit);
 
                 Vector3 spawnPos = chunkWorldPos + new Vector3(randomX, randomY, 0);
 
@@ -141,29 +132,25 @@ public class InfiniteMapGenerator : MonoBehaviour
 
                 if (randomAmmoPrefab != null)
                 {
-                    Instantiate(randomAmmoPrefab, spawnPos, Quaternion.identity);
+                    Instantiate(randomAmmoPrefab, spawnPos, Quaternion.identity, parentChunk.transform);
                 }
             }
         }
     }
 
-    void TrySpawnEnemiesInChunk(Vector3 chunkWorldPos)
+    void TrySpawnEnemiesInChunk(GameObject parentChunk, Vector3 chunkWorldPos)
     {
         if (enemyPrefabs == null || enemyPrefabs.Length == 0) return;
 
         if (Random.Range(0f, 100f) <= enemySpawnChance)
         {
-            // คำนวณจำนวนที่สามารถเสกได้ไม่ให้เกินลิมิตของ Wave
-            int possibleSpawnCount = Mathf.Min(maxEnemiesPerChunk, maxEnemiesPerWave - currentWaveSpawnedEnemies);
-            if (possibleSpawnCount <= 0) return;
-
-            int enemyCount = Random.Range(1, possibleSpawnCount + 1);
+            int enemyCount = Random.Range(1, maxEnemiesPerChunk + 1);
 
             for (int i = 0; i < enemyCount; i++)
             {
-                float halfSize = chunkSize / 2f - 2f;
-                float randomX = Random.Range(-halfSize, halfSize);
-                float randomY = Random.Range(-halfSize, halfSize);
+                float offsetLimit = (chunkSize / 2f) - 2f;
+                float randomX = Random.Range(-offsetLimit, offsetLimit);
+                float randomY = Random.Range(-offsetLimit, offsetLimit);
 
                 Vector3 spawnPos = chunkWorldPos + new Vector3(randomX, randomY, 0);
 
@@ -171,9 +158,8 @@ public class InfiniteMapGenerator : MonoBehaviour
 
                 if (randomEnemyPrefab != null)
                 {
-                    GameObject newEnemy = Instantiate(randomEnemyPrefab, spawnPos, Quaternion.identity);
-                    newEnemy.tag = "Enemy";
-                    currentWaveSpawnedEnemies++; // นับจำนวนผีที่ถูกเสกเพิ่มขึ้น 1 ตัว
+                    GameObject newEnemy = Instantiate(randomEnemyPrefab, spawnPos, Quaternion.identity, parentChunk.transform);
+                    newEnemy.tag = "Enemy"; // กำหนด Tag ป้องกันการตกหล่น
                 }
             }
         }

@@ -9,6 +9,9 @@ public class Enemy : MonoBehaviour, IDamageable
     public float maxHealth = 100f;
     public float moveSpeed = 2.5f;
 
+    [Header("Score Setup")]
+    public int scoreValue = 100; // กำหนดคะแนนที่ผู้เล่นจะได้เมื่อฆ่าศัตรูตัวนี้
+
     [Header("Attack Setup")]
     public int attackDamage = 10;
     public float attackRate = 1f; // โจมตีทุก 1 วินาที
@@ -96,6 +99,12 @@ public class Enemy : MonoBehaviour, IDamageable
 
     private void Die()
     {
+        // บวกลบคะแนนให้ผู้เล่นเมื่อศัตรูตาย
+        if (ScoreManager.instance != null)
+        {
+            ScoreManager.instance.AddScore(scoreValue);
+        }
+
         Collider2D col = GetComponent<Collider2D>();
         if (col != null) col.enabled = false;
 

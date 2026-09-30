@@ -11,23 +11,33 @@ public class WaveSpawner : MonoBehaviour
         public GameObject enemyPrefab;
         [Range(1, 100)]
         public int spawnWeight = 10;
-        public int minWaveToAppear = 1;
+        public int minWaveToAppear = 1; // ตั้งค่าเป็น 5 สำหรับศัตรูพิเศษ
     }
 
-    [Header("Spawner Settings")]
+    [Header("Enemy Settings")]
     public EnemySpawnInfo[] enemyTypes;
-    public Transform[] spawnPoints;
+    public Transform playerTransform;
+    public float minSpawnRadius = 10f;
+    public float maxSpawnRadius = 18f;
 
-    [Header("Ammo Spawner Settings")]
-    public GameObject[] ammoPrefabs;      // ใส่ Prefab กล่องกระสุนที่ต้องการเสก (Normal / MagicSilver)
-    public Transform[] ammoSpawnPoints;   // จุดที่จะให้กระสุนเกิด (ถ้าไม่ใส่ จะใช้ spawnPoints เดียวกับศัตรู)
-    public int ammoBoxesPerWave = 1;      // จำนวนกล่องกระสุนที่จะเสกต่อ round
+    [Header("Item Settings (ประจำ Wave)")]
+    public GameObject medkitPrefab;
+    public int medkitsPerWave = 1;
 
-    [Header("Wave Settings")]
-    public float timeBetweenWaves = 3f;
-    public float spawnDelay = 1f;
-    public int baseZombieCount = 3;
-    public int extraZombiesPerWave = 2;
+    public GameObject[] powerUpPrefabs;
+    public int powerUpsPerWave = 1;
+
+    [Header("Wave Progression Settings")]
+    public float baseTimeBetweenWaves = 5f;
+    public float minTimeBetweenWaves = 2f;
+    public float timeReducePerWave = 0.3f;
+
+    public float baseSpawnDelay = 1.0f;
+    public float minSpawnDelay = 0.2f;
+    public float spawnDelayReducePerWave = 0.05f;
+
+    public int baseZombieCount = 5;
+    public int extraZombiesPerWave = 3;
 
     [Header("UI Settings")]
     public TextMeshProUGUI waveText;
@@ -38,12 +48,17 @@ public class WaveSpawner : MonoBehaviour
 
     void Start()
     {
+        if (playerTransform == null)
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null) playerTransform = playerObj.transform;
+        }
+
         StartCoroutine(StartNextWave());
     }
 
     void Update()
     {
-        // เช็กจำนวนศัตรูในฉาก โดยนับเฉพาะตัวที่ยัง alive (สคริปต์ Enemy ยังเปิดใช้งานอยู่)
         int remainingZombies = GetActiveEnemyCount();
 
         if (zombieCountText != null)
@@ -51,7 +66,6 @@ public class WaveSpawner : MonoBehaviour
             zombieCountText.text = "Zombies Left: " + remainingZombies;
         }
 
-        // ถ้ากำลังเสกอยู่ หรือยังมีศัตรูเหลืออยู่ ให้รอ
         if (isSpawning || remainingZombies > 0)
         {
             return;
@@ -86,14 +100,10 @@ public class WaveSpawner : MonoBehaviour
         if (waveText != null && currentWave > 0)
         {
             waveText.text = "Wave Cleared! Get Ready...";
-
-            if (ScoreManager.instance != null)
-            {
-                ScoreManager.instance.AddScore(currentWave * 500);
-            }
         }
 
-        yield return new WaitForSeconds(timeBetweenWaves);
+        float currentWaitTime = Mathf.Max(minTimeBetweenWaves, baseTimeBetweenWaves - ((currentWave - 1) * timeReducePerWave));
+        yield return new WaitForSeconds(currentWaitTime);
 
         currentWave++;
 
@@ -102,57 +112,58 @@ public class WaveSpawner : MonoBehaviour
             waveText.text = "WAVE " + currentWave;
         }
 
-        // --- เสกกล่องกระสุนประจำ Round ---
-        SpawnAmmoBoxes();
+        // เสกไอเทมประจำ Wave ใกล้ๆ ตัวผู้เล่น
+        if (medkitPrefab != null) SpawnItemsAroundPlayer(new GameObject[] { medkitPrefab }, medkitsPerWave);
+        SpawnItemsAroundPlayer(powerUpPrefabs, powerUpsPerWave);
 
         int zombiesToSpawn = baseZombieCount + (currentWave - 1) * extraZombiesPerWave;
 
+        // อัปเดตโควต้าผีใน InfiniteMapGenerator (แก้ Warning เป็น FindAnyObjectByType แล้ว)
+        InfiniteMapGenerator mapGen = Object.FindAnyObjectByType<InfiniteMapGenerator>();
+        if (mapGen != null)
+        {
+            mapGen.ResetWaveEnemyCount(zombiesToSpawn);
+        }
+
+        float currentSpawnDelay = Mathf.Max(minSpawnDelay, baseSpawnDelay - ((currentWave - 1) * spawnDelayReducePerWave));
+
         for (int i = 0; i < zombiesToSpawn; i++)
         {
-            SpawnZombie();
-            yield return new WaitForSeconds(spawnDelay);
+            SpawnZombieAroundPlayer();
+            yield return new WaitForSeconds(currentSpawnDelay);
         }
 
         isSpawning = false;
     }
 
-    void SpawnAmmoBoxes()
+    void SpawnZombieAroundPlayer()
     {
-        if (ammoPrefabs == null || ammoPrefabs.Length == 0) return;
+        GameObject selectedPrefab = GetRandomEnemyPrefab();
+        if (selectedPrefab == null || playerTransform == null) return;
 
-        // เลือกจุดเสกกระสุน (ถ้าไม่มี ammoSpawnPoints ให้ใช้ spawnPoints ของศัตรู)
-        Transform[] pointsToUse = (ammoSpawnPoints != null && ammoSpawnPoints.Length > 0) ? ammoSpawnPoints : spawnPoints;
+        Vector2 randomCircle = Random.insideUnitCircle.normalized * Random.Range(minSpawnRadius, maxSpawnRadius);
+        Vector3 spawnPos = playerTransform.position + new Vector3(randomCircle.x, randomCircle.y, 0);
 
-        if (pointsToUse == null || pointsToUse.Length == 0) return;
-
-        for (int i = 0; i < ammoBoxesPerWave; i++)
-        {
-            GameObject selectedAmmo = ammoPrefabs[Random.Range(0, ammoPrefabs.Length)];
-            Transform randomPoint = pointsToUse[Random.Range(0, pointsToUse.Length)];
-
-            Instantiate(selectedAmmo, randomPoint.position, Quaternion.identity);
-        }
+        GameObject newEnemy = Instantiate(selectedPrefab, spawnPos, Quaternion.identity);
+        newEnemy.tag = "Enemy";
     }
 
-    void SpawnZombie()
+    void SpawnItemsAroundPlayer(GameObject[] itemPrefabs, int count)
     {
-        if (spawnPoints == null || spawnPoints.Length == 0)
+        if (itemPrefabs == null || itemPrefabs.Length == 0 || playerTransform == null) return;
+
+        for (int i = 0; i < count; i++)
         {
-            Debug.LogWarning("ไม่ได้ใส่ SpawnPoints ใน WaveSpawner!");
-            return;
+            GameObject selectedItem = itemPrefabs[Random.Range(0, itemPrefabs.Length)];
+
+            if (selectedItem != null)
+            {
+                Vector2 randomCircle = Random.insideUnitCircle.normalized * Random.Range(3f, 8f);
+                Vector3 spawnPos = playerTransform.position + new Vector3(randomCircle.x, randomCircle.y, 0);
+
+                Instantiate(selectedItem, spawnPos, Quaternion.identity);
+            }
         }
-
-        GameObject selectedPrefab = GetRandomEnemyPrefab();
-        if (selectedPrefab == null)
-        {
-            Debug.LogWarning("หา Prefab ศัตรูไม่เจอ! กรุณาเช็ก Enemy Types ใน Inspector");
-            return;
-        }
-
-        Transform randomPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
-        GameObject newEnemy = Instantiate(selectedPrefab, randomPoint.position, randomPoint.rotation);
-
-        newEnemy.tag = "Enemy";
     }
 
     GameObject GetRandomEnemyPrefab()

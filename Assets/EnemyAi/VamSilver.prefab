@@ -179,6 +179,7 @@ MonoBehaviour:
   enemyType: 1
   maxHealth: 150
   moveSpeed: 2
+  scoreValue: 150
   attackDamage: 10
   attackRate: 1
 --- !u!50 &1923251609223608739

@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class PlayerAimAndWeapon : MonoBehaviour
 {
@@ -21,10 +22,20 @@ public class PlayerAimAndWeapon : MonoBehaviour
     [Header("Ammo Type Settings")]
     public AmmoType currentAmmoType = AmmoType.Normal;
 
+    // รูปกระสุนที่ใช้บอกว่าตอนนี้เลือกกระสุนอะไร
+    public Image ammoIconUI;
+    public SpriteRenderer ammoSource;
+
+    // สีของรูปกระสุนแต่ละชนิด
+    public Color normalAmmoColor = Color.white;
+    public Color silverAmmoColor = Color.gray;
+
     [Header("Limited Ammo Settings")]
-    public int normalAmmo = 30;       // จำนวนกระสุนธรรมดา
-    public int magicSilverAmmo = 0;   // จำนวนกระสุนเงินวิเศษ
+    public int normalAmmo = 30;
+    public int magicSilverAmmo = 0;
+
     public TextMeshProUGUI ammoText;
+
     [Header("Ammo UI")]
     public AmmoUI ammoUI;
 
@@ -45,6 +56,7 @@ public class PlayerAimAndWeapon : MonoBehaviour
         }
 
         UpdateAmmoUI();
+        UpdateAmmoIcon();
         SetHandSortingOrder();
     }
 
@@ -58,8 +70,13 @@ public class PlayerAimAndWeapon : MonoBehaviour
         // กด Q เพื่อสลับประเภทกระสุน
         if (Input.GetKeyDown(KeyCode.Q))
         {
-            currentAmmoType = (currentAmmoType == AmmoType.Normal) ? AmmoType.MagicSilver : AmmoType.Normal;
+            currentAmmoType =
+                (currentAmmoType == AmmoType.Normal)
+                ? AmmoType.MagicSilver
+                : AmmoType.Normal;
+
             UpdateAmmoUI();
+            UpdateAmmoIcon();
         }
 
         HandleShooting();
@@ -67,15 +84,21 @@ public class PlayerAimAndWeapon : MonoBehaviour
 
     void FixedUpdate()
     {
-        rb.linearVelocity = moveInput.normalized * moveSpeed;
+        if (rb != null)
+        {
+            rb.linearVelocity = moveInput.normalized * moveSpeed;
+        }
+
         HandleAiming();
     }
 
     void HandleAiming()
     {
-        if (handPivot == null || bodySprite == null) return;
+        if (handPivot == null || bodySprite == null)
+            return;
 
         Vector2 aimDir = mousePos - (Vector2)handPivot.position;
+
         float angle = Mathf.Atan2(aimDir.y, aimDir.x) * Mathf.Rad2Deg;
 
         handPivot.rotation = Quaternion.Euler(0f, 0f, angle);
@@ -94,28 +117,36 @@ public class PlayerAimAndWeapon : MonoBehaviour
 
     void HandleShooting()
     {
-        // เช็กจำนวนกระสุนตามประเภทที่เลือกอยู่
-        bool hasAmmo = (currentAmmoType == AmmoType.Normal && normalAmmo > 0) ||
-                       (currentAmmoType == AmmoType.MagicSilver && magicSilverAmmo > 0);
+        // เช็กจำนวนกระสุนตามประเภทที่เลือก
+        bool hasAmmo =
+            (currentAmmoType == AmmoType.Normal && normalAmmo > 0) ||
+            (currentAmmoType == AmmoType.MagicSilver && magicSilverAmmo > 0);
 
-        if (Input.GetButton("Fire1") && Time.time >= nextFireTime && hasAmmo)
+        if (Input.GetButton("Fire1") &&
+            Time.time >= nextFireTime &&
+            hasAmmo)
         {
             nextFireTime = Time.time + fireRate;
+
             Shoot();
         }
     }
 
     void Shoot()
     {
-        if (firePoint == null) return;
+        if (firePoint == null)
+            return;
 
-        GameObject prefabToSpawn = (currentAmmoType == AmmoType.MagicSilver && silverBulletPrefab != null)
+        // เลือกกระสุนที่จะยิง
+        GameObject prefabToSpawn =
+            (currentAmmoType == AmmoType.MagicSilver && silverBulletPrefab != null)
             ? silverBulletPrefab
             : bulletPrefab;
 
-        if (prefabToSpawn == null) return;
+        if (prefabToSpawn == null)
+            return;
 
-        // หักกระสุนตามประเภทที่ใช้อยู่
+        // หักจำนวนกระสุน
         if (currentAmmoType == AmmoType.Normal)
         {
             normalAmmo--;
@@ -124,24 +155,40 @@ public class PlayerAimAndWeapon : MonoBehaviour
         {
             magicSilverAmmo--;
 
-            // ถ้ากระสุนเงินหมด ให้สลับกลับเป็นกระสุนธรรมดาให้อัตโนมัติ
+            // ถ้ากระสุนเงินหมด
+            // ให้กลับไปใช้กระสุนธรรมดา
             if (magicSilverAmmo <= 0)
             {
+                magicSilverAmmo = 0;
                 currentAmmoType = AmmoType.Normal;
+
+                UpdateAmmoIcon();
             }
         }
 
         UpdateAmmoUI();
 
-        GameObject bulletObj = Instantiate(prefabToSpawn, firePoint.position, firePoint.rotation);
+        // สร้างกระสุน
+        GameObject bulletObj = Instantiate(
+            prefabToSpawn,
+            firePoint.position,
+            firePoint.rotation
+        );
 
-        Rigidbody2D bulletRb = bulletObj.GetComponent<Rigidbody2D>();
+        Rigidbody2D bulletRb =
+            bulletObj.GetComponent<Rigidbody2D>();
+
         if (bulletRb != null)
         {
-            bulletRb.AddForce(firePoint.right * bulletForce, ForceMode2D.Impulse);
+            bulletRb.AddForce(
+                firePoint.right * bulletForce,
+                ForceMode2D.Impulse
+            );
         }
 
-        Bullet bulletScript = bulletObj.GetComponent<Bullet>();
+        Bullet bulletScript =
+            bulletObj.GetComponent<Bullet>();
+
         if (bulletScript != null)
         {
             bulletScript.damage = damage;
@@ -149,16 +196,38 @@ public class PlayerAimAndWeapon : MonoBehaviour
         }
     }
 
+    // เปลี่ยนสีรูปกระสุนตามชนิดที่เลือก
+    void UpdateAmmoIcon()
+    {
+        if (ammoIconUI == null || ammoSource == null) return;
+
+        ammoIconUI.sprite = ammoSource.sprite;
+
+        if (currentAmmoType == AmmoType.Normal)
+        {
+            ammoIconUI.color = normalAmmoColor;
+        }
+        else
+        {
+            ammoIconUI.color = silverAmmoColor;
+        }
+    }
+
+    // อัปเดตหลอดกระสุน + ตัวเลข
     void UpdateAmmoUI()
     {
         if (ammoText != null)
         {
-            ammoText.text = $"Normal: {normalAmmo} | Silver: {magicSilverAmmo} [{currentAmmoType}]";
+            ammoText.text =
+                $"Normal: {normalAmmo} | Silver: {magicSilverAmmo} [{currentAmmoType}]";
         }
 
         if (ammoUI != null)
         {
-            ammoUI.UpdateAmmo(normalAmmo, magicSilverAmmo);
+            ammoUI.UpdateAmmo(
+                normalAmmo,
+                magicSilverAmmo
+            );
         }
     }
 
@@ -166,18 +235,24 @@ public class PlayerAimAndWeapon : MonoBehaviour
     {
         if (handPivot != null && bodySprite != null)
         {
-            int targetOrder = bodySprite.sortingOrder + 1;
-            SpriteRenderer[] handSprites = handPivot.GetComponentsInChildren<SpriteRenderer>();
+            int targetOrder =
+                bodySprite.sortingOrder + 1;
+
+            SpriteRenderer[] handSprites =
+                handPivot.GetComponentsInChildren<SpriteRenderer>();
 
             foreach (SpriteRenderer sr in handSprites)
             {
-                sr.sortingLayerID = bodySprite.sortingLayerID;
-                sr.sortingOrder = targetOrder;
+                sr.sortingLayerID =
+                    bodySprite.sortingLayerID;
+
+                sr.sortingOrder =
+                    targetOrder;
             }
         }
     }
 
-    // ฟังก์ชันรับกระสุนแยกตามประเภท
+    // รับกระสุน
     public void AddAmmo(AmmoType type, int amount)
     {
         if (type == AmmoType.Normal)
@@ -187,9 +262,12 @@ public class PlayerAimAndWeapon : MonoBehaviour
         else if (type == AmmoType.MagicSilver)
         {
             magicSilverAmmo += amount;
-            currentAmmoType = AmmoType.MagicSilver; // สลับมาใช้กระสุนเงินทันทีเมื่อเก็บได้
+
+            // เก็บกระสุนเงินแล้วเปลี่ยนมาใช้ทันที
+            currentAmmoType = AmmoType.MagicSilver;
         }
 
         UpdateAmmoUI();
+        UpdateAmmoIcon();
     }
 }

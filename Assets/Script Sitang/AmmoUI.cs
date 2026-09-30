@@ -4,31 +4,37 @@ using TMPro;
 
 public class AmmoUI : MonoBehaviour
 {
-    public Slider ammoBar;
-    public TMP_Text ammoText;
+    public Slider normalAmmoBar;
+    public TMP_Text normalAmmoText;
 
-    public int maxAmmo = 30;
-    private int currentAmmo;
+    public Slider silverAmmoBar;
+    public TMP_Text silverAmmoText;
 
-    void Start()
+    public int maxNormalAmmo = 30;
+    public int maxSilverAmmo = 30;
+
+    public void UpdateAmmo(int normalAmmo, int silverAmmo)
     {
-        currentAmmo = maxAmmo;
-        UpdateAmmoUI();
-    }
-
-    public void UseAmmo()
-    {
-        if (currentAmmo > 0)
+        if (normalAmmoBar != null)
         {
-            currentAmmo--;
-            UpdateAmmoUI();
+            normalAmmoBar.maxValue = maxNormalAmmo;
+            normalAmmoBar.value = normalAmmo;
         }
-    }
 
-    void UpdateAmmoUI()
-    {
-        ammoBar.maxValue = maxAmmo;
-        ammoBar.value = currentAmmo;
-        ammoText.text = currentAmmo + " / " + maxAmmo;
+        if (normalAmmoText != null)
+        {
+            normalAmmoText.text = normalAmmo.ToString();
+        }
+
+        if (silverAmmoBar != null)
+        {
+            silverAmmoBar.maxValue = maxSilverAmmo;
+            silverAmmoBar.value = silverAmmo;
+        }
+
+        if (silverAmmoText != null)
+        {
+            silverAmmoText.text = silverAmmo.ToString();
+        }
     }
 }

@@ -177,10 +177,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   enemyType: 0
-  maxHealth: 100
+  maxHealth: 30
   moveSpeed: 2.5
   attackDamage: 10
   attackRate: 5
+  speed: 3
+  chaseRange: 100
+  hitSprite: {fileID: -392852972, guid: 1bc6097228993f045852159e71f81d5b, type: 3}
+  deathSprite: {fileID: 1261089785, guid: 1bc6097228993f045852159e71f81d5b, type: 3}
+  flashDuration: 0.15
+  spriteRenderer: {fileID: 6426087795164473656}
+  zombieCollider: {fileID: 3455544680630467323}
+  anim: {fileID: 3615799766783730687}
 --- !u!50 &1461830153010540081
 Rigidbody2D:
   serializedVersion: 5

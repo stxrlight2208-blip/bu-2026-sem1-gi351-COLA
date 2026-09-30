@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI; // ใช้สำหรับอัปเดต UI แถบเลือด (Slider)
+using UnityEngine.SceneManagement;
 
 public class PlayerHealth : MonoBehaviour
 {
@@ -55,6 +56,6 @@ public class PlayerHealth : MonoBehaviour
     {
         Debug.Log("Player ตายแล้ว!");
         // ซ่อนตัวละคร หรือรีโหลดฉากใหม่
-        gameObject.SetActive(false);
+        SceneManager.LoadScene("GameOver");
     }
 }

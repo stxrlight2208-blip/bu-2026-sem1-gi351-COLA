@@ -2147,6 +2147,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 350213378969545811, guid: 270e558f7cb805247b800a0bf3cc087f,
         type: 3}
+      propertyPath: maxHealth
+      value: 70
+      objectReference: {fileID: 0}
+    - target: {fileID: 350213378969545811, guid: 270e558f7cb805247b800a0bf3cc087f,
+        type: 3}
       propertyPath: attackDamage
       value: 15
       objectReference: {fileID: 0}

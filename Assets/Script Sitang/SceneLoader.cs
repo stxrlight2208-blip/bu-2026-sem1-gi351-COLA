@@ -22,6 +22,10 @@ public class SceneLoader : MonoBehaviour
     {
         SceneManager.LoadScene("MainMenu");
     }
+    public void AmmoTutorial()
+    {
+        SceneManager.LoadScene("AmmoTutorial");
+    }
 
     public void ExitGame()
     {

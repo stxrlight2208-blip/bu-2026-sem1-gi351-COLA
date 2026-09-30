@@ -143,6 +143,7 @@ public class WaveSpawner : MonoBehaviour
         }
 
         GameObject selectedPrefab = GetRandomEnemyPrefab();
+
         if (selectedPrefab == null)
         {
             Debug.LogWarning("หา Prefab ศัตรูไม่เจอ! กรุณาเช็ก Enemy Types ใน Inspector");
@@ -150,9 +151,27 @@ public class WaveSpawner : MonoBehaviour
         }
 
         Transform randomPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
-        GameObject newEnemy = Instantiate(selectedPrefab, randomPoint.position, randomPoint.rotation);
+
+        GameObject newEnemy = Instantiate(
+            selectedPrefab,
+            randomPoint.position,
+            randomPoint.rotation
+        );
 
         newEnemy.tag = "Enemy";
+
+        // เอา HP จาก Prefab ของตัวนั้นโดยตรง
+        Enemy enemy = newEnemy.GetComponent<Enemy>();
+
+        if (enemy != null)
+        {
+            enemy.SetHealth(enemy.maxHealth);
+
+            Debug.Log(
+                "Spawn: " + selectedPrefab.name +
+                " | HP = " + enemy.maxHealth
+            );
+        }
     }
 
     GameObject GetRandomEnemyPrefab()

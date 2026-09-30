@@ -177,7 +177,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   enemyType: 1
-  maxHealth: 150
+  maxHealth: 70
   moveSpeed: 2
   attackDamage: 10
   attackRate: 1

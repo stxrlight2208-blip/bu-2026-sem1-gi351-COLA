@@ -153,4 +153,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AmmoPickup
   ammoType: 0
-  ammoAmount: 10
+  ammoAmount: 15

@@ -207,7 +207,7 @@ MonoBehaviour:
   enemyType: 1
   maxHealth: 70
   moveSpeed: 3
-  scoreValue: 700
+  scoreValue: 350
   attackDamage: 15
   attackRate: 1
 --- !u!114 &523999010318578837
@@ -222,4 +222,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38367e4e806daef4b8c271198d1fd663, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyScore
-  scoreValue: 700
+  scoreValue: 350

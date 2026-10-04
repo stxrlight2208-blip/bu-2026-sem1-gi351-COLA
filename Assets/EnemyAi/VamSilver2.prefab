@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: -9005511646485892939}
   - component: {fileID: 7206899181557615709}
   - component: {fileID: 7544862429753480443}
+  - component: {fileID: 523999010318578837}
   m_Layer: 0
   m_Name: VamSilver2
   m_TagString: Untagged
@@ -204,7 +205,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   enemyType: 1
-  maxHealth: 100
+  maxHealth: 70
   moveSpeed: 3
+  scoreValue: 700
   attackDamage: 15
   attackRate: 1
+--- !u!114 &523999010318578837
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2522521201549059949}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38367e4e806daef4b8c271198d1fd663, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyScore
+  scoreValue: 700

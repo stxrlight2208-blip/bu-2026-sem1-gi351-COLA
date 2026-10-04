@@ -73,8 +73,8 @@ public class WaveSpawner : MonoBehaviour
 
     public GameObject[] ammoPrefabs;
 
-    [Tooltip("จำนวนกล่องกระสุนต่อ Wave")]
-    public int ammoBoxesPerWave = 3;
+    [Tooltip("จำนวนกล่องกระสุนพื้นฐานต่อ Wave")]
+    public int ammoBoxesPerWave = 8;
 
 
     // =========================================================
@@ -280,7 +280,9 @@ public class WaveSpawner : MonoBehaviour
         // BOSS
         // =====================================================
 
-        if (currentWave >= bossStartWave)
+        // Boss Wave = 5, 10, 15, 20...
+        if (currentWave >= bossStartWave &&
+            currentWave % 5 == 0)
         {
             SpawnBoss();
         }
@@ -524,8 +526,68 @@ public class WaveSpawner : MonoBehaviour
         }
 
 
+        // =====================================================
+        // จำนวนกล่องตาม Wave
+        // =====================================================
+
+        int ammoBoxCount;
+
+
+        if (currentWave <= 3)
+        {
+            ammoBoxCount = 8;
+        }
+        else if (currentWave <= 5)
+        {
+            ammoBoxCount = 9;
+        }
+        else if (currentWave <= 7)
+        {
+            ammoBoxCount = 10;
+        }
+        else if (currentWave <= 9)
+        {
+            ammoBoxCount = 12;
+        }
+        else if (currentWave == 10)
+        {
+            ammoBoxCount = 14;
+        }
+        else if (currentWave <= 12)
+        {
+            ammoBoxCount = 13;
+        }
+        else if (currentWave <= 14)
+        {
+            ammoBoxCount = 14;
+        }
+        else if (currentWave == 15)
+        {
+            ammoBoxCount = 16;
+        }
+        else if (currentWave <= 17)
+        {
+            ammoBoxCount = 15;
+        }
+        else if (currentWave <= 19)
+        {
+            ammoBoxCount = 16;
+        }
+        else
+        {
+            ammoBoxCount = 18;
+        }
+
+
+        // =====================================================
+        // SPAWN AMMO BOXES
+        // =====================================================
+
+        int spawnedAmmoBoxes = 0;
+
+
         for (int i = 0;
-             i < ammoBoxesPerWave;
+             i < ammoBoxCount;
              i++)
         {
             Vector2 spawnPosition;
@@ -560,11 +622,25 @@ public class WaveSpawner : MonoBehaviour
                 ];
 
 
+            // สร้างกล่อง
             Instantiate(
                 selectedAmmo,
                 spawnPosition,
                 Quaternion.identity
             );
+
+
+            spawnedAmmoBoxes++;
+
+
+            // =================================================
+            // UPDATE AMMO BOX UI
+            // =================================================
+
+            if (AmmoBoxUI.instance != null)
+            {
+                AmmoBoxUI.instance.AddAmmoBox();
+            }
 
 
             Debug.Log(
@@ -574,6 +650,12 @@ public class WaveSpawner : MonoBehaviour
                 spawnPosition
             );
         }
+
+
+        Debug.Log(
+            $"Wave {currentWave}: " +
+            $"สร้างกล่องกระสุน {spawnedAmmoBoxes} กล่อง"
+        );
     }
 
 

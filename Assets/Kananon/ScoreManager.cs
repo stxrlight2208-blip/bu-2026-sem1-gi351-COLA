@@ -15,6 +15,13 @@ public class ScoreManager : MonoBehaviour
         if (instance == null)
         {
             instance = this;
+
+            // ให้ ScoreManager อยู่ต่อเมื่อเปลี่ยน Scene
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
         }
     }
 
@@ -29,11 +36,18 @@ public class ScoreManager : MonoBehaviour
         UpdateScoreUI();
     }
 
+    // ใช้ดึงคะแนนไปแสดงหน้า Game Over
+    public int GetScore()
+    {
+        return currentScore;
+    }
+
     void UpdateScoreUI()
     {
         if (scoreText != null)
         {
-            scoreText.text = "Score: " + currentScore.ToString("N0");
+            scoreText.text =
+                "Score: " + currentScore.ToString("N0");
         }
     }
 }

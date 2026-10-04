@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7672728459153752539}
   - component: {fileID: 5609285443607114128}
   - component: {fileID: -2977409386428616606}
+  - component: {fileID: 3500504183627903597}
   m_Layer: 0
   m_Name: VamNormal2
   m_TagString: Untagged
@@ -208,3 +209,16 @@ MonoBehaviour:
   moveSpeed: 2.5
   attackDamage: 5
   attackRate: 1
+--- !u!114 &3500504183627903597
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1373869713469124304}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38367e4e806daef4b8c271198d1fd663, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyScore
+  scoreValue: 300

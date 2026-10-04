@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 3455544680630467323}
   - component: {fileID: 350213378969545811}
   - component: {fileID: 1923251609223608739}
+  - component: {fileID: 3628156214338756101}
   m_Layer: 0
   m_Name: VamSilver
   m_TagString: Enemy
@@ -179,6 +180,7 @@ MonoBehaviour:
   enemyType: 1
   maxHealth: 50
   moveSpeed: 2
+  scoreValue: 500
   attackDamage: 12
   attackRate: 1
 --- !u!50 &1923251609223608739
@@ -208,3 +210,16 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
+--- !u!114 &3628156214338756101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2249679518028380063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38367e4e806daef4b8c271198d1fd663, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyScore
+  scoreValue: 500

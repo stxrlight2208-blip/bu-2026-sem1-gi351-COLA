@@ -42,29 +42,40 @@ public class Enemy : MonoBehaviour, IDamageable
     {
         currentHealth = maxHealth;
 
-        GameObject playerObj = GameObject.FindWithTag("Player");
+        GameObject playerObj =
+            GameObject.FindWithTag("Player");
 
         if (playerObj != null)
         {
-            playerTransform = playerObj.transform;
+            playerTransform =
+                playerObj.transform;
         }
     }
 
     private void FixedUpdate()
     {
-        if (playerTransform != null && currentHealth > 0)
+        if (playerTransform != null &&
+            currentHealth > 0)
         {
             Vector2 direction =
-                (playerTransform.position - transform.position).normalized;
+                (playerTransform.position -
+                 transform.position).normalized;
 
-            rb.MovePosition(
-                rb.position +
-                direction * moveSpeed * Time.fixedDeltaTime
-            );
-
-            if (direction.x != 0)
+            if (rb != null)
             {
-                spriteRenderer.flipX = direction.x < 0;
+                rb.MovePosition(
+                    rb.position +
+                    direction *
+                    moveSpeed *
+                    Time.fixedDeltaTime
+                );
+            }
+
+            if (direction.x != 0 &&
+                spriteRenderer != null)
+            {
+                spriteRenderer.flipX =
+                    direction.x < 0;
             }
         }
     }
@@ -73,7 +84,8 @@ public class Enemy : MonoBehaviour, IDamageable
     // Enemy โจมตี Player
     // ================================
 
-    private void OnCollisionStay2D(Collision2D collision)
+    private void OnCollisionStay2D(
+        Collision2D collision)
     {
         if (currentHealth <= 0)
             return;
@@ -83,13 +95,17 @@ public class Enemy : MonoBehaviour, IDamageable
             if (Time.time >= nextAttackTime)
             {
                 PlayerHealth playerHealth =
-                    collision.gameObject.GetComponent<PlayerHealth>();
+                    collision.gameObject
+                    .GetComponent<PlayerHealth>();
 
                 if (playerHealth != null)
                 {
-                    playerHealth.TakeDamage(attackDamage);
+                    playerHealth.TakeDamage(
+                        attackDamage
+                    );
 
-                    nextAttackTime = Time.time + attackRate;
+                    nextAttackTime =
+                        Time.time + attackRate;
                 }
             }
         }
@@ -99,29 +115,71 @@ public class Enemy : MonoBehaviour, IDamageable
     // Enemy รับ Damage
     // ================================
 
-    public void TakeDamage(int damage, AmmoType ammoType)
+    public void TakeDamage(
+        int damage,
+        AmmoType ammoType)
     {
         if (currentHealth <= 0)
             return;
 
-        // SilverOnly แพ้เฉพาะกระสุน Silver
+        // ================================
+        // BOSS LOCK
+        // ================================
+
+        if (enemyType == EnemyType.Boss)
+        {
+            WaveSpawner spawner =
+                FindObjectOfType<WaveSpawner>();
+
+            if (spawner != null &&
+                !spawner.IsBossUnlocked())
+            {
+                Debug.Log(
+                    "Boss ยังโจมตีไม่ได้! " +
+                    "ต้องฆ่าศัตรูตัวอื่นให้หมดก่อน"
+                );
+
+                return;
+            }
+        }
+
+        // ================================
+        // SilverOnly แพ้เฉพาะ Silver
+        // ================================
+
         if (enemyType == EnemyType.SilverOnly &&
             ammoType != AmmoType.MagicSilver)
         {
-            Debug.Log("Silver Vampire เป็นอมตะต่อกระสุนธรรมดา!");
+            Debug.Log(
+                "Silver Vampire เป็นอมตะต่อกระสุนธรรมดา!"
+            );
+
             return;
         }
+
+        // ================================
+        // ลดเลือด
+        // ================================
 
         currentHealth -= damage;
 
         Debug.Log(
-            $"{enemyType} HP เหลือ: {currentHealth}/{maxHealth}"
+            $"{enemyType} HP เหลือ: " +
+            $"{currentHealth}/{maxHealth}"
         );
+
+        // ================================
+        // Hit Animation
+        // ================================
 
         if (anim != null)
         {
             anim.SetTrigger("Hit");
         }
+
+        // ================================
+        // ตาย
+        // ================================
 
         if (currentHealth <= 0)
         {
@@ -147,10 +205,13 @@ public class Enemy : MonoBehaviour, IDamageable
 
         if (ScoreManager.instance != null)
         {
-            ScoreManager.instance.AddScore(scoreValue);
+            ScoreManager.instance.AddScore(
+                scoreValue
+            );
 
             Debug.Log(
-                $"{enemyType} ถูกฆ่า! +{scoreValue} Score"
+                $"{enemyType} ถูกฆ่า! " +
+                $"+{scoreValue} Score"
             );
         }
         else
@@ -164,7 +225,8 @@ public class Enemy : MonoBehaviour, IDamageable
         // ปิด Collider
         // ================================
 
-        Collider2D col = GetComponent<Collider2D>();
+        Collider2D col =
+            GetComponent<Collider2D>();
 
         if (col != null)
         {
@@ -177,14 +239,20 @@ public class Enemy : MonoBehaviour, IDamageable
 
         if (anim != null)
         {
-            anim.SetBool("Dead", true);
+            anim.SetBool(
+                "Dead",
+                true
+            );
         }
 
         // ปิดการทำงานของ Enemy
         this.enabled = false;
 
         // ลบ Enemy หลังจาก 2 วินาที
-        Destroy(gameObject, 2f);
+        Destroy(
+            gameObject,
+            2f
+        );
     }
 
     // ================================
@@ -195,5 +263,7 @@ public class Enemy : MonoBehaviour, IDamageable
     {
         maxHealth = health;
         currentHealth = health;
+
+        scoreAdded = false;
     }
 }

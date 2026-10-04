@@ -124,6 +124,9 @@ public class WaveSpawner : MonoBehaviour
 
     private bool isSpawning = false;
 
+    // Boss จะยังโจมตีไม่ได้จนกว่า Enemy ตัวอื่นจะหมด
+    private bool bossUnlocked = false;
+
 
     // =========================================================
     // START
@@ -131,8 +134,6 @@ public class WaveSpawner : MonoBehaviour
 
     void Start()
     {
-        // ถ้ายังไม่ได้ลาก Player มา
-        // ให้ค้นหาจาก Tag Player
         if (player == null)
         {
             GameObject playerObject =
@@ -158,6 +159,10 @@ public class WaveSpawner : MonoBehaviour
             GetActiveEnemyCount();
 
 
+        // =====================================================
+        // UPDATE ZOMBIE COUNT UI
+        // =====================================================
+
         if (zombieCountText != null)
         {
             zombieCountText.text =
@@ -166,6 +171,50 @@ public class WaveSpawner : MonoBehaviour
         }
 
 
+        // =====================================================
+        // BOSS UNLOCK CHECK
+        // =====================================================
+
+        if (IsBossWave() &&
+            !bossUnlocked &&
+            !isSpawning)
+        {
+            int normalEnemies =
+                GetNormalEnemyCount();
+
+
+            // ถ้า Enemy ที่ไม่ใช่ Boss ตายหมด
+            if (normalEnemies <= 0)
+            {
+                bossUnlocked = true;
+
+                Debug.Log(
+                    "================================"
+                );
+
+                Debug.Log(
+                    "BOSS UNLOCKED!"
+                );
+
+                Debug.Log(
+                    "ศัตรูตัวอื่นตายหมดแล้ว"
+                );
+
+                Debug.Log(
+                    "สามารถโจมตี Boss ได้แล้ว!"
+                );
+
+                Debug.Log(
+                    "================================"
+                );
+            }
+        }
+
+
+        // =====================================================
+        // WAIT FOR ENEMIES
+        // =====================================================
+
         if (isSpawning ||
             remainingEnemies > 0)
         {
@@ -173,12 +222,37 @@ public class WaveSpawner : MonoBehaviour
         }
 
 
+        // =====================================================
+        // START NEXT WAVE
+        // =====================================================
+
         StartCoroutine(StartNextWave());
     }
 
 
     // =========================================================
-    // COUNT ENEMIES
+    // CHECK BOSS WAVE
+    // =========================================================
+
+    bool IsBossWave()
+    {
+        return currentWave >= bossStartWave &&
+               currentWave % 5 == 0;
+    }
+
+
+    // =========================================================
+    // CHECK BOSS UNLOCKED
+    // =========================================================
+
+    public bool IsBossUnlocked()
+    {
+        return bossUnlocked;
+    }
+
+
+    // =========================================================
+    // COUNT ALL ACTIVE ENEMIES
     // =========================================================
 
     int GetActiveEnemyCount()
@@ -192,18 +266,67 @@ public class WaveSpawner : MonoBehaviour
 
         foreach (GameObject enemyObj in enemies)
         {
-            if (enemyObj != null &&
-                enemyObj.activeInHierarchy)
+            if (enemyObj == null ||
+                !enemyObj.activeInHierarchy)
             {
-                Enemy enemyScript =
-                    enemyObj.GetComponent<Enemy>();
+                continue;
+            }
 
 
-                if (enemyScript != null &&
-                    enemyScript.enabled)
-                {
-                    count++;
-                }
+            Enemy enemyScript =
+                enemyObj.GetComponent<Enemy>();
+
+
+            if (enemyScript != null &&
+                enemyScript.enabled)
+            {
+                count++;
+            }
+        }
+
+
+        return count;
+    }
+
+
+    // =========================================================
+    // COUNT NORMAL ENEMIES
+    // =========================================================
+
+    int GetNormalEnemyCount()
+    {
+        GameObject[] enemies =
+            GameObject.FindGameObjectsWithTag("Enemy");
+
+
+        int count = 0;
+
+
+        foreach (GameObject enemyObj in enemies)
+        {
+            if (enemyObj == null ||
+                !enemyObj.activeInHierarchy)
+            {
+                continue;
+            }
+
+
+            Enemy enemy =
+                enemyObj.GetComponent<Enemy>();
+
+
+            if (enemy == null ||
+                !enemy.enabled)
+            {
+                continue;
+            }
+
+
+            // นับเฉพาะ Enemy ที่ไม่ใช่ Boss
+            if (enemy.enemyType !=
+                Enemy.EnemyType.Boss)
+            {
+                count++;
             }
         }
 
@@ -257,6 +380,10 @@ public class WaveSpawner : MonoBehaviour
         currentWave++;
 
 
+        // ล็อก Boss ใหม่ทุก Wave
+        bossUnlocked = false;
+
+
         // =====================================================
         // WAVE UI
         // =====================================================
@@ -280,9 +407,7 @@ public class WaveSpawner : MonoBehaviour
         // BOSS
         // =====================================================
 
-        // Boss Wave = 5, 10, 15, 20...
-        if (currentWave >= bossStartWave &&
-            currentWave % 5 == 0)
+        if (IsBossWave())
         {
             SpawnBoss();
         }
@@ -316,7 +441,7 @@ public class WaveSpawner : MonoBehaviour
 
 
         // =====================================================
-        // FINISHED
+        // FINISHED SPAWNING
         // =====================================================
 
         isSpawning = false;
@@ -324,12 +449,11 @@ public class WaveSpawner : MonoBehaviour
 
 
     // =========================================================
-    // FIND RANDOM POSITION AROUND PLAYER
+    // FIND RANDOM POSITION
     // =========================================================
 
     bool FindRandomSpawnPosition(
-        out Vector2 position
-    )
+        out Vector2 position)
     {
         position = Vector2.zero;
 
@@ -344,15 +468,10 @@ public class WaveSpawner : MonoBehaviour
         }
 
 
-        // =====================================================
-        // TRY RANDOM POSITIONS
-        // =====================================================
-
         for (int i = 0;
              i < spawnPositionAttempts;
              i++)
         {
-            // สุ่มมุมรอบ Player
             float angle =
                 Random.Range(
                     0f,
@@ -360,7 +479,6 @@ public class WaveSpawner : MonoBehaviour
                 );
 
 
-            // สุ่มระยะ
             float distance =
                 Random.Range(
                     minSpawnDistance,
@@ -368,23 +486,24 @@ public class WaveSpawner : MonoBehaviour
                 );
 
 
-            // แปลงมุมเป็น Vector2
             Vector2 direction =
                 new Vector2(
-                    Mathf.Cos(angle * Mathf.Deg2Rad),
-                    Mathf.Sin(angle * Mathf.Deg2Rad)
+                    Mathf.Cos(
+                        angle *
+                        Mathf.Deg2Rad
+                    ),
+                    Mathf.Sin(
+                        angle *
+                        Mathf.Deg2Rad
+                    )
                 );
 
 
-            // ตำแหน่งรอบ Player
             Vector2 randomPosition =
                 (Vector2)player.position +
-                direction * distance;
+                direction *
+                distance;
 
-
-            // =================================================
-            // CHECK OBSTACLE
-            // =================================================
 
             Collider2D hit =
                 Physics2D.OverlapCircle(
@@ -394,7 +513,6 @@ public class WaveSpawner : MonoBehaviour
                 );
 
 
-            // ถ้าไม่ชนกำแพง
             if (hit == null)
             {
                 position =
@@ -444,10 +562,6 @@ public class WaveSpawner : MonoBehaviour
         }
 
 
-        // =====================================================
-        // SPAWN BOSS
-        // =====================================================
-
         GameObject boss =
             Instantiate(
                 bossPrefab,
@@ -457,12 +571,11 @@ public class WaveSpawner : MonoBehaviour
 
 
         // ให้ระบบนับ Boss เป็น Enemy
-        boss.tag =
-            "Enemy";
+        boss.tag = "Enemy";
 
 
         // =====================================================
-        // RESET HP
+        // SET BOSS TYPE
         // =====================================================
 
         Enemy bossEnemy =
@@ -471,6 +584,11 @@ public class WaveSpawner : MonoBehaviour
 
         if (bossEnemy != null)
         {
+            // สำคัญ: กำหนดให้เป็น Boss
+            bossEnemy.enemyType =
+                Enemy.EnemyType.Boss;
+
+
             bossEnemy.SetHealth(
                 bossEnemy.maxHealth
             );
@@ -483,6 +601,14 @@ public class WaveSpawner : MonoBehaviour
 
         Debug.Log(
             "BOSS SPAWNED!"
+        );
+
+        Debug.Log(
+            "BOSS IS LOCKED!"
+        );
+
+        Debug.Log(
+            "ต้องฆ่า Enemy ตัวอื่นก่อน"
         );
 
         Debug.Log(
@@ -525,10 +651,6 @@ public class WaveSpawner : MonoBehaviour
             return;
         }
 
-
-        // =====================================================
-        // จำนวนกล่องตาม Wave
-        // =====================================================
 
         int ammoBoxCount;
 
@@ -579,10 +701,6 @@ public class WaveSpawner : MonoBehaviour
         }
 
 
-        // =====================================================
-        // SPAWN AMMO BOXES
-        // =====================================================
-
         int spawnedAmmoBoxes = 0;
 
 
@@ -609,10 +727,6 @@ public class WaveSpawner : MonoBehaviour
             }
 
 
-            // =================================================
-            // RANDOM AMMO
-            // =================================================
-
             GameObject selectedAmmo =
                 ammoPrefabs[
                     Random.Range(
@@ -622,7 +736,6 @@ public class WaveSpawner : MonoBehaviour
                 ];
 
 
-            // สร้างกล่อง
             Instantiate(
                 selectedAmmo,
                 spawnPosition,
@@ -634,7 +747,7 @@ public class WaveSpawner : MonoBehaviour
 
 
             // =================================================
-            // UPDATE AMMO BOX UI
+            // AMMO BOX UI
             // =================================================
 
             if (AmmoBoxUI.instance != null)
@@ -654,7 +767,8 @@ public class WaveSpawner : MonoBehaviour
 
         Debug.Log(
             $"Wave {currentWave}: " +
-            $"สร้างกล่องกระสุน {spawnedAmmoBoxes} กล่อง"
+            $"สร้างกล่องกระสุน " +
+            $"{spawnedAmmoBoxes} กล่อง"
         );
     }
 
@@ -698,10 +812,6 @@ public class WaveSpawner : MonoBehaviour
         }
 
 
-        // =====================================================
-        // SPAWN ZOMBIE
-        // =====================================================
-
         GameObject newEnemy =
             Instantiate(
                 selectedPrefab,
@@ -710,13 +820,8 @@ public class WaveSpawner : MonoBehaviour
             );
 
 
-        newEnemy.tag =
-            "Enemy";
+        newEnemy.tag = "Enemy";
 
-
-        // =====================================================
-        // RESET HP
-        // =====================================================
 
         Enemy enemy =
             newEnemy.GetComponent<Enemy>();
@@ -732,6 +837,8 @@ public class WaveSpawner : MonoBehaviour
             Debug.Log(
                 "Spawn: " +
                 selectedPrefab.name +
+                " | Type = " +
+                enemy.enemyType +
                 " | HP = " +
                 enemy.maxHealth
             );
@@ -768,7 +875,7 @@ public class WaveSpawner : MonoBehaviour
 
 
         // =====================================================
-        // ไม่มี Enemy ที่ตรงเงื่อนไข
+        // FALLBACK
         // =====================================================
 
         if (totalWeight <= 0)

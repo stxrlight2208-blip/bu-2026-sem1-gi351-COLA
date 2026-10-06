@@ -2006,6 +2006,8 @@ GameObject:
   - component: {fileID: 709187502}
   - component: {fileID: 709187503}
   - component: {fileID: 709187504}
+  - component: {fileID: 709187505}
+  - component: {fileID: 709187506}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -2246,10 +2248,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc72bc3a188ff6d46a0205971a94c6a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AudioPlayer
-  currentAmmo: 10
-  audioSource: {fileID: 0}
-  shootSound: {fileID: 0}
-  emptySound: {fileID: 0}
 --- !u!82 &709187502
 AudioSource:
   m_ObjectHideFlags: 0
@@ -2378,6 +2376,35 @@ MonoBehaviour:
   playerHealth: {fileID: 709187500}
   audioSource: {fileID: 709187502}
   hurtSound: {fileID: 8300000, guid: 3342f14f3cf07fe478b5e9b66051784f, type: 3}
+--- !u!114 &709187505
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 709187492}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27acb2598d0e6c246a1ee44c8139a234, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerKeySoundPosition
+  triggerKey: 113
+  soundClip: {fileID: 8300000, guid: 456be407dfda2e84d9ba31d480362cd3, type: 3}
+  volume: 0.397
+--- !u!114 &709187506
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 709187492}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f3ac5069e5cbd249820e013e4b8cf51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PauseAndAudioSettings
+  pauseMenuUI: {fileID: 0}
+  volumeSlider: {fileID: 0}
 --- !u!1 &757903112
 GameObject:
   m_ObjectHideFlags: 0

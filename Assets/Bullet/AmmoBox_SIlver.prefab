@@ -108,6 +108,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AmmoPickup
   ammoType: 1
   ammoAmount: 10
+  pickupSound: {fileID: 8300000, guid: 911c01106b5f7d94b9947af2e7107613, type: 3}
+  soundVolume: 1
 --- !u!61 &4677448755911207501
 BoxCollider2D:
   m_ObjectHideFlags: 0

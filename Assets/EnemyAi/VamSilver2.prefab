@@ -210,6 +210,10 @@ MonoBehaviour:
   scoreValue: 350
   attackDamage: 15
   attackRate: 1
+  hitSound: {fileID: 8300000, guid: 724ebb1e2a41f564192e3a26171250b5, type: 3}
+  hitSoundVolume: 0.2
+  footstepSound: {fileID: 8300000, guid: 67614a274b0bc9f4f8d9f2ebd87c63b6, type: 3}
+  footstepVolume: 0.01
 --- !u!114 &523999010318578837
 MonoBehaviour:
   m_ObjectHideFlags: 0

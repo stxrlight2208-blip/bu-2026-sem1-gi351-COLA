@@ -1486,8 +1486,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6e8c6a717699e69449d7ec4f4441c90a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MusicManager
-  menuMusic: {fileID: 8300000, guid: 32d4d4969c7ab014fa02c6cedf753a1c, type: 3}
-  gameMusic: {fileID: 8300000, guid: d0b809c36b3b01f40b551b1ab8d173c2, type: 3}
+  menuMusic: {fileID: 8300000, guid: bc90571eb0d748146b29848991bd84c8, type: 3}
+  gameMusic: {fileID: 8300000, guid: 2a9f579fe3ceca9439a12f2331d308df, type: 3}
 --- !u!1 &1092084847
 GameObject:
   m_ObjectHideFlags: 0

@@ -22,11 +22,19 @@ public class Enemy : MonoBehaviour, IDamageable
     public float attackRate = 1f;
     private float nextAttackTime = 0f;
 
+    [Header("Audio Settings")]
+    public AudioClip hitSound;          // เสียงตอนโดนยิง/รับ Damage
+    [Range(0f, 1f)] public float hitSoundVolume = 1f;
+    
+    public AudioClip footstepSound;     // เสียงตอนเดิน
+    [Range(0f, 1f)] public float footstepVolume = 0.5f;
+
     private float currentHealth;
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
     private Animator anim;
     private Transform playerTransform;
+    private AudioSource audioSource;    // ใช้สำหรับเล่นเสียงเดินแบบวนลูป
 
     // ป้องกันการให้คะแนนซ้ำ
     private bool scoreAdded = false;
@@ -36,30 +44,41 @@ public class Enemy : MonoBehaviour, IDamageable
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
+
+        // เพิ่มหรือดึง AudioSource สำหรับเสียงเดิน
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        audioSource.playOnAwake = false;
+        audioSource.loop = true; // ตั้งให้วนลูปเสียงเดิน
     }
 
     private void Start()
     {
         currentHealth = maxHealth;
 
-        GameObject playerObj =
-            GameObject.FindWithTag("Player");
+        GameObject playerObj = GameObject.FindWithTag("Player");
 
         if (playerObj != null)
         {
-            playerTransform =
-                playerObj.transform;
+            playerTransform = playerObj.transform;
+        }
+
+        // ตั้งค่าเสียงเดินตั้งต้น
+        if (footstepSound != null)
+        {
+            audioSource.clip = footstepSound;
+            audioSource.volume = footstepVolume;
         }
     }
 
     private void FixedUpdate()
     {
-        if (playerTransform != null &&
-            currentHealth > 0)
+        if (playerTransform != null && currentHealth > 0)
         {
-            Vector2 direction =
-                (playerTransform.position -
-                 transform.position).normalized;
+            Vector2 direction = (playerTransform.position - transform.position).normalized;
 
             if (rb != null)
             {
@@ -71,12 +90,33 @@ public class Enemy : MonoBehaviour, IDamageable
                 );
             }
 
-            if (direction.x != 0 &&
-                spriteRenderer != null)
+            if (direction.x != 0 && spriteRenderer != null)
             {
-                spriteRenderer.flipX =
-                    direction.x < 0;
+                spriteRenderer.flipX = direction.x < 0;
             }
+
+            // จัดการเสียงเดิน
+            HandleFootstepSound(true);
+        }
+        else
+        {
+            // หยุดเสียงเดินเมื่อไม่มี Player หรือตายแล้ว
+            HandleFootstepSound(false);
+        }
+    }
+
+    // ควบคุมการเปิด-ปิด เสียงเดิน
+    private void HandleFootstepSound(bool isMoving)
+    {
+        if (footstepSound == null) return;
+
+        if (isMoving && !audioSource.isPlaying)
+        {
+            audioSource.Play();
+        }
+        else if (!isMoving && audioSource.isPlaying)
+        {
+            audioSource.Stop();
         }
     }
 
@@ -84,8 +124,7 @@ public class Enemy : MonoBehaviour, IDamageable
     // Enemy โจมตี Player
     // ================================
 
-    private void OnCollisionStay2D(
-        Collision2D collision)
+    private void OnCollisionStay2D(Collision2D collision)
     {
         if (currentHealth <= 0)
             return;
@@ -94,18 +133,12 @@ public class Enemy : MonoBehaviour, IDamageable
         {
             if (Time.time >= nextAttackTime)
             {
-                PlayerHealth playerHealth =
-                    collision.gameObject
-                    .GetComponent<PlayerHealth>();
+                PlayerHealth playerHealth = collision.gameObject.GetComponent<PlayerHealth>();
 
                 if (playerHealth != null)
                 {
-                    playerHealth.TakeDamage(
-                        attackDamage
-                    );
-
-                    nextAttackTime =
-                        Time.time + attackRate;
+                    playerHealth.TakeDamage(attackDamage);
+                    nextAttackTime = Time.time + attackRate;
                 }
             }
         }
@@ -115,9 +148,7 @@ public class Enemy : MonoBehaviour, IDamageable
     // Enemy รับ Damage
     // ================================
 
-    public void TakeDamage(
-        int damage,
-        AmmoType ammoType)
+    public void TakeDamage(int damage, AmmoType ammoType)
     {
         if (currentHealth <= 0)
             return;
@@ -128,17 +159,11 @@ public class Enemy : MonoBehaviour, IDamageable
 
         if (enemyType == EnemyType.Boss)
         {
-            WaveSpawner spawner =
-                FindObjectOfType<WaveSpawner>();
+            WaveSpawner spawner = FindObjectOfType<WaveSpawner>();
 
-            if (spawner != null &&
-                !spawner.IsBossUnlocked())
+            if (spawner != null && !spawner.IsBossUnlocked())
             {
-                Debug.Log(
-                    "Boss ยังโจมตีไม่ได้! " +
-                    "ต้องฆ่าศัตรูตัวอื่นให้หมดก่อน"
-                );
-
+                Debug.Log("Boss ยังโจมตีไม่ได้! ต้องฆ่าศัตรูตัวอื่นให้หมดก่อน");
                 return;
             }
         }
@@ -147,13 +172,9 @@ public class Enemy : MonoBehaviour, IDamageable
         // SilverOnly แพ้เฉพาะ Silver
         // ================================
 
-        if (enemyType == EnemyType.SilverOnly &&
-            ammoType != AmmoType.MagicSilver)
+        if (enemyType == EnemyType.SilverOnly && ammoType != AmmoType.MagicSilver)
         {
-            Debug.Log(
-                "Silver Vampire เป็นอมตะต่อกระสุนธรรมดา!"
-            );
-
+            Debug.Log("Silver Vampire เป็นอมตะต่อกระสุนธรรมดา!");
             return;
         }
 
@@ -163,10 +184,13 @@ public class Enemy : MonoBehaviour, IDamageable
 
         currentHealth -= damage;
 
-        Debug.Log(
-            $"{enemyType} HP เหลือ: " +
-            $"{currentHealth}/{maxHealth}"
-        );
+        Debug.Log($"{enemyType} HP เหลือ: {currentHealth}/{maxHealth}");
+
+        // เล่นเสียงเมื่อโดน Damage
+        if (hitSound != null)
+        {
+            AudioSource.PlayClipAtPoint(hitSound, transform.position, hitSoundVolume);
+        }
 
         // ================================
         // Hit Animation
@@ -199,34 +223,31 @@ public class Enemy : MonoBehaviour, IDamageable
 
         scoreAdded = true;
 
+        // หยุดเสียงเดินทันทีเมื่อตาย
+        if (audioSource != null && audioSource.isPlaying)
+        {
+            audioSource.Stop();
+        }
+
         // ================================
         // เพิ่ม Score
         // ================================
 
         if (ScoreManager.instance != null)
         {
-            ScoreManager.instance.AddScore(
-                scoreValue
-            );
-
-            Debug.Log(
-                $"{enemyType} ถูกฆ่า! " +
-                $"+{scoreValue} Score"
-            );
+            ScoreManager.instance.AddScore(scoreValue);
+            Debug.Log($"{enemyType} ถูกฆ่า! +{scoreValue} Score");
         }
         else
         {
-            Debug.LogWarning(
-                "ไม่พบ ScoreManager ใน Scene!"
-            );
+            Debug.LogWarning("ไม่พบ ScoreManager ใน Scene!");
         }
 
         // ================================
         // ปิด Collider
         // ================================
 
-        Collider2D col =
-            GetComponent<Collider2D>();
+        Collider2D col = GetComponent<Collider2D>();
 
         if (col != null)
         {
@@ -239,20 +260,14 @@ public class Enemy : MonoBehaviour, IDamageable
 
         if (anim != null)
         {
-            anim.SetBool(
-                "Dead",
-                true
-            );
+            anim.SetBool("Dead", true);
         }
 
         // ปิดการทำงานของ Enemy
         this.enabled = false;
 
         // ลบ Enemy หลังจาก 2 วินาที
-        Destroy(
-            gameObject,
-            2f
-        );
+        Destroy(gameObject, 2f);
     }
 
     // ================================

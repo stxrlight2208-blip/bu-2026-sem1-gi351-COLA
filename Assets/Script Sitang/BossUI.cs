@@ -22,6 +22,7 @@ public class BossUI : MonoBehaviour
             return;
         }
 
+        // เริ่มเกมให้ซ่อน UI
         if (bossStatusText != null)
         {
             bossStatusText.gameObject.SetActive(false);
@@ -30,36 +31,66 @@ public class BossUI : MonoBehaviour
 
     private void Update()
     {
-        if (bossEnemy == null)
-            return;
+        WaveSpawner spawner = FindObjectOfType<WaveSpawner>();
 
+        // ไม่มี WaveSpawner
+        if (spawner == null)
+        {
+            HideBossUI();
+            return;
+        }
+
+        // =========================================
+        // ถ้าไม่ใช่ Wave ที่มี Boss → ซ่อน UI
+        // =========================================
+
+        int currentWave = spawner.GetCurrentWave();
+
+        if (currentWave < 5 || currentWave % 5 != 0)
+        {
+            HideBossUI();
+            return;
+        }
+
+        // =========================================
+        // ถ้าเป็น Boss Wave แต่ยังไม่มี Boss
+        // =========================================
+
+        if (bossEnemy == null)
+        {
+            return;
+        }
+
+        // Boss ตายแล้ว
         if (!bossEnemy.gameObject.activeInHierarchy)
         {
             HideBossUI();
             return;
         }
 
-        WaveSpawner spawner =
-            FindObjectOfType<WaveSpawner>();
+        // =========================================
+        // Boss LOCK / UNLOCK
+        // =========================================
 
-        if (spawner != null &&
-            spawner.IsBossUnlocked())
+        if (spawner.IsBossUnlocked())
         {
-            bossStatusText.text =
-                "BOSS UNLOCKED";
+            bossStatusText.gameObject.SetActive(true);
 
-            bossStatusText.color =
-                Color.yellow;
+            bossStatusText.text = "BOSS UNLOCKED";
+            bossStatusText.color = Color.yellow;
         }
         else
         {
-            bossStatusText.text =
-                "BOSS LOCKED";
+            bossStatusText.gameObject.SetActive(true);
 
-            bossStatusText.color =
-                Color.red;
+            bossStatusText.text = "BOSS LOCKED";
+            bossStatusText.color = Color.red;
         }
     }
+
+    // =========================================
+    // SHOW BOSS
+    // =========================================
 
     public void ShowBoss(Enemy boss)
     {
@@ -72,13 +103,14 @@ public class BossUI : MonoBehaviour
         {
             bossStatusText.gameObject.SetActive(true);
 
-            bossStatusText.text =
-                "BOSS LOCKED";
-
-            bossStatusText.color =
-                Color.red;
+            bossStatusText.text = "BOSS LOCKED";
+            bossStatusText.color = Color.red;
         }
     }
+
+    // =========================================
+    // HIDE BOSS UI
+    // =========================================
 
     public void HideBossUI()
     {

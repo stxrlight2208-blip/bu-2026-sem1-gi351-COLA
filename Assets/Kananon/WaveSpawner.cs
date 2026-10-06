@@ -242,6 +242,16 @@ public class WaveSpawner : MonoBehaviour
 
 
     // =========================================================
+    // GET CURRENT WAVE
+    // =========================================================
+
+    public int GetCurrentWave()
+    {
+        return currentWave;
+    }
+
+
+    // =========================================================
     // CHECK BOSS UNLOCKED
     // =========================================================
 
@@ -592,6 +602,8 @@ public class WaveSpawner : MonoBehaviour
             bossEnemy.SetHealth(
                 bossEnemy.maxHealth
             );
+
+
             if (BossUI.instance != null)
             {
                 BossUI.instance.ShowBoss(bossEnemy);
